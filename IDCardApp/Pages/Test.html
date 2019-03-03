@@ -1,0 +1,225 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>楼栋管理</title>
+    <link rel="stylesheet" href="./scripts/element-ui.2.4.10.css" />
+    <link rel="stylesheet" href="./scripts/app.css" />
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-header>
+                <el-header>
+                    <el-menu :default-active="activeMenuIndex"
+                             mode="horizontal"
+                             background-color="#545c64"
+                             text-color="#fff"
+                             active-text-color="#ffd04b">
+                        <el-menu-item index="1"><a href="./main.html" target="_self">发卡</a></el-menu-item>
+                        <el-menu-item index="2"><a href="./Test.html" target="_self">楼栋</a></el-menu-item>
+                        <el-menu-item index="3"><a href="./device.html" target="_self">门禁</a></el-menu-item>
+                        <el-menu-item index="4"><a href="./userinfo.html" target="_self">人员</a></el-menu-item>
+                        <el-menu-item index="5"><a href="./card.html" target="_self">门禁卡</a></el-menu-item>
+                    </el-menu>
+                </el-header>
+            </el-header>
+            <el-main>
+                <div class="toolbar">
+
+                    <el-input placeholder="输入查询内容" v-model="filterVal" @keyup.native.enter="filter"></el-input>
+                    <el-button type="primary" icon="el-icon-search" @click="filter"></el-button>
+
+                    <el-button-group>
+                        <el-button type="success" icon="el-icon-plus" @click="appendRow"></el-button>
+                        <el-button type="danger" icon="el-icon-delete" @click="removeRows"></el-button>
+                    </el-button-group>
+                </div>
+                <div>
+                    <el-table :data="tableData" height="500" border size="mini" style="width: 100%"
+                              @row-dblclick="rowDblclick" @selection-change="handleSelectionChange">
+                        <el-table-column type="selection" width=50></el-table-column>
+                        <el-table-column type="index"></el-table-column>
+                        <el-table-column prop="Code" label="编号" width="100"></el-table-column>
+                        <el-table-column prop="Name" label="名称" width="180"></el-table-column>
+                        <el-table-column prop="Address" label="地址"></el-table-column>
+                    </el-table>
+                </div>
+            </el-main>
+        </el-container>
+    </div>
+    <div id="dialog">
+        <el-dialog :title="bindData ? '编辑' : '新增'" :visible.sync="visible">
+            <el-form :model="formData" :rules="rules" ref="editForm" label-width="100px">
+                <el-form-item label="编码" prop="Code">
+                    <el-input v-model="formData.Code"></el-input>
+                </el-form-item>
+                <el-form-item label="名称" prop="Name">
+                    <el-input v-model="formData.Name"></el-input>
+                </el-form-item>
+                <el-form-item label="地址" prop="Address">
+                    <el-input type="textarea" v-model="formData.Address"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button @click="visible = false">取消</el-button>
+                <el-button type="primary" @click="onOk">确定</el-button>
+            </div>
+        </el-dialog>
+    </div>
+
+    <script src="./scripts/vue.js"></script>
+    <script src="./scripts/element-ui.2.4.10.js"></script>
+    <script>
+        var service = (function (_proxy) {
+            var exec = function (cmd, data) {
+                if (!_proxy) { throw new Error('非客户端环境'); }
+
+                let p = _proxy.execute(cmd, data && typeof data !== 'string' ? JSON.stringify(data) : data);
+                return new Promise((resolve, reject) => {
+                    p.then(d => {
+                        d.data = d && d.jsonData ? JSON.parse(d.jsonData) : null;
+                        resolve(d);
+                    }, e => {
+                        Vue.prototype.$message.error('数据请求出错...');
+                        console.error(e);
+                        reject(e);
+                    });
+                });
+            };
+            return {
+                fetch: function () {
+                    return exec('repo.building.fetch');
+                },
+                destory: function (datas) {
+                    return exec('repo.building.destory', datas);
+                },
+                create: function (data) {
+                    return exec('repo.building.create', data);
+                },
+                update: function (data) {
+                    return exec('repo.building.update', data);
+                }
+            };
+        })(window['$formProxy']);
+    </script>
+    <script>
+        var page = new Vue({
+            el: '#app',
+            data: {
+                activeMenuIndex: '2',
+                sourceData: [],
+                tableData: [],
+                selections: [],
+                filterVal: ''
+            },
+            methods: {
+                rowDblclick: function (row, event) {
+                    dialog.loadData(row);
+                },
+                handleSelectionChange: function (val) {
+                    this.selections = val;
+                },
+                appendRow: function () {
+                    dialog.loadData(null);
+                },
+                removeRows: function () {
+                    let me = this;
+                    let selIds = me.selections.map(t => t.PkId);
+                    if (!selIds.length) {
+                        return me.$message.warning('请勾选要删除的记录');
+                    }
+                    me.$confirm('此操作将永久删除所选的 ' + selIds.length + ' 条记录, 是否继续?', '提示', {
+                        confirmButtonText: '确定',
+                        cancelButtonText: '取消',
+                        type: 'warning'
+                    }).then(() => service.destory(selIds.join(',')))
+                        .then(() => {
+                            let s = me.sourceData.filter(t => selIds.indexOf(t.PkId) === -1);
+                            me.sourceData = s;
+                            me.filter();
+                            me.$message.success('删除成功!');
+                        });
+                },
+                filter: function () {
+                    let data = this.sourceData,
+                        val = this.filterVal;
+                    if (val) {
+                        data = data.filter(t => t.Code.indexOf(val) > -1 || t.Name.indexOf(val) > -1);
+                    }
+                    this.tableData = data;
+                }
+            },
+            created: function () {
+                let me = this;
+                me.tableData = me.sourceData;
+                service.fetch().then(d => {
+                    if (d.success) {
+                        me.sourceData = d.data || [];
+                        me.filter();
+                    }
+                });
+            }
+        });
+
+        var dialog = new Vue({
+            el: '#dialog',
+            data: {
+                visible: false,
+                bindData: null,
+                formData: {
+                    PkId: '',
+                    Code: '',
+                    Name: '',
+                    Address: ''
+                },
+                rules: {
+                    Code: [
+                        { required: true, message: '请输入代码', trigger: 'blur' }
+                    ],
+                    Name: [
+                        { required: true, message: '请输入名称', trigger: 'blur' }
+                    ]
+                }
+            },
+            methods: {
+                onOk: function () {
+                    let me = this;
+                    me.$refs['editForm'].validate((valid) => {
+                        if (!valid) return false;
+
+                        let data = me.formData;
+                        if (me.bindData) {
+                            service.update(data).then(
+                                d => {
+                                    Object.assign(me.bindData, data);
+                                }
+                            );
+                        } else {
+                            service.create(data).then(
+                                d => {
+                                    data.PkId = d.data;
+                                    page.sourceData.push(data);
+                                    page.filter();
+                                }
+                            );
+                        }
+                        me.visible = false;
+                    });
+                },
+                loadData: function (data) {
+                    this.bindData = data;
+                    this.formData = Object.assign({}, data || {
+                        PkId: '',
+                        Code: '',
+                        Name: '',
+                        Address: ''
+                    });
+                    this.visible = true;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

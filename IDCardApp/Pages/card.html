@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>发卡记录</title>
+    <link rel="stylesheet" href="./scripts/element-ui.2.4.10.css" />
+    <link rel="stylesheet" href="./scripts/app.css" />
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-header>
+                <el-header style="padding:0;">
+                    <el-menu :default-active="activeMenuIndex"
+                             mode="horizontal"
+                             background-color="#545c64"
+                             text-color="#fff"
+                             active-text-color="#ffd04b">
+                        <el-menu-item index="1"><a href="./main.html" target="_self">发卡</a></el-menu-item>
+                        <el-menu-item index="2"><a href="./Test.html" target="_self">楼栋</a></el-menu-item>
+                        <el-menu-item index="3"><a href="./device.html" target="_self">门禁</a></el-menu-item>
+                        <el-menu-item index="4"><a href="./userinfo.html" target="_self">人员</a></el-menu-item>
+                        <el-menu-item index="5"><a href="./card.html" target="_self">门禁卡</a></el-menu-item>
+                    </el-menu>
+                </el-header>
+            </el-header>
+            <el-main>
+                <div class="toolbar">
+                    <el-input placeholder="姓名/卡号/手机号/身份证号" v-model="filterVal" @keyup.native.enter="filter"></el-input>
+                    <el-button type="primary" icon="el-icon-search" @click="filter"></el-button>
+                </div>
+                <div>
+                    <el-table :data="tableData" height="500" border size="mini" style="width: 100%"
+                              @row-dblclick="rowDblclick">
+                        <el-table-column type="index"></el-table-column>
+                        <el-table-column prop="UserName" label="姓名" width="90"></el-table-column>
+                        <el-table-column prop="UserPhone" label="电话" width="140"></el-table-column>
+                        <el-table-column prop="IdentityNumber" label="身份证号" width="200"></el-table-column>
+                        <el-table-column prop="UserRoom" label="房号" width="60"></el-table-column>
+                        <el-table-column prop="CardNo" label="卡号" width="100"></el-table-column>
+                        <el-table-column prop="CardType" label="卡类型" width="120">
+                            <template slot-scope="scope">
+                                {{ scope.row.CardType == 'A' ? '普通卡' : '管理卡' }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="InvalidDate" label="失效日期" width="80"></el-table-column>
+                        <el-table-column label="操作">
+                            <template slot-scope="scope">
+                                <el-button type="primary" size="mini" @click="onCardMgmtClick(scope.row)">发卡</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </el-main>
+        </el-container>
+    </div> 
+    <script src="./scripts/vue.js"></script>
+    <script src="./scripts/element-ui.2.4.10.js"></script>
+    <script>
+        var service = (function (_proxy) {
+            var exec = function (cmd, data) {
+                if (!_proxy) { throw new Error('非客户端环境'); }
+
+                let p = _proxy.execute(cmd, data && typeof data !== 'string' ? JSON.stringify(data) : data);
+                return new Promise((resolve, reject) => {
+                    p.then(d => {
+                        console.log(cmd, d);
+                        d.data = d && d.jsonData ? JSON.parse(d.jsonData) : null;
+                        if (d.success) {
+                            resolve(d);
+                        } else {
+                            reject(d);
+                        }
+                    }, e => {
+                        Vue.prototype.$message.error('数据请求出错...');
+                        console.error(e);
+                        reject(e);
+                    });
+                });
+            };
+            return {
+                fetch: function () {
+                    return exec('repo.cardinfo.queryUserCard');
+                },
+            };
+        })(window['$formProxy']);
+    </script>
+    <script>
+        var page = new Vue({
+            el: '#app',
+            data: {
+                activeMenuIndex: '5',
+                sourceData: [],
+                tableData: [],
+                filterVal: ''
+            },
+            methods: {
+                rowDblclick: function (row, event) {
+                    dialog.loadData(row);
+                },
+                onCardMgmtClick: function (row) {
+                    var url = './main.html?user=#USER#&card=#CARD#';
+                    url = url.replace('#USER#', row.UserId || '')
+                        .replace('#CARD#', row.CardId || '');
+                    location.href = url;
+                },
+                filter: function () {
+                    let data = this.sourceData,
+                        val = this.filterVal;
+                    if (val) {
+                        data = data.filter(t => (t.UserName == val || t.UserPhone == val
+                            || t.IdentityNumber == val || t.CardNo == val));
+                    }
+                    this.tableData = data;
+                },
+                fetchData: function () {
+                    let me = this;
+                    me.tableData = me.sourceData;
+                    service.fetch().then(d => {
+                        if (d.success) {
+                            me.sourceData = d.data || [];
+                            me.filter();
+                        }
+                    });
+                }
+            }
+        });
+
+        page.fetchData();
+    </script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>发卡登记</title>
+    <link rel="stylesheet" href="./scripts/element-ui.2.4.10.css" />
+    <link rel="stylesheet" href="./scripts/app.css" />
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-header>
+                <el-header>
+                    <el-menu :default-active="activeMenuIndex"
+                             mode="horizontal"
+                             background-color="#545c64"
+                             text-color="#fff"
+                             active-text-color="#ffd04b">
+                        <el-menu-item index="1"><a href="./main.html" target="_self">发卡</a></el-menu-item>
+                        <el-menu-item index="2"><a href="./Test.html" target="_self">楼栋</a></el-menu-item>
+                        <el-menu-item index="3"><a href="./device.html" target="_self">门禁</a></el-menu-item>
+                        <el-menu-item index="4"><a href="./userinfo.html" target="_self">人员</a></el-menu-item>
+                        <el-menu-item index="5"><a href="./card.html" target="_self">门禁卡</a></el-menu-item>
+                    </el-menu>
+                </el-header>
+            </el-header>
+            <el-main>
+                <el-col :span="13">
+                    <div class="header">
+                        <span class="label">人员信息</span>
+                        <el-checkbox label="识别身份证" v-model="autoReadIdentityCard"></el-checkbox>
+                    </div>
+                    <div style="position:relative;">
+                        <el-form :model="userInfo" :rules="rules" ref="editForm" label-width="100px">
+                            <el-form-item label="姓名" prop="Name">
+                                <el-col :span="8">
+                                    <el-input v-model="userInfo.Name" style="width:140px;"></el-input>
+                                </el-col>
+                                <el-col :span="2">性别</el-col>
+                                <el-col :span="4">
+                                    <el-select v-model="userInfo.Gender" style="width:140px;">
+                                        <el-option label="男" value="男"></el-option>
+                                        <el-option label="女" value="女"></el-option>
+                                    </el-select>
+                                </el-col>
+                            </el-form-item>
+                            <el-form-item label="出生日期">
+                                <el-col :span="8">
+                                    <el-date-picker type="date" v-model="userInfo.Birth" style="width:140px;"
+                                                    format="yyyy-MM-dd" value-format="yyyy-MM-dd"></el-date-picker>
+                                </el-col>
+                                <el-col :span="2">民族</el-col>
+                                <el-col :span="6">
+                                    <el-input v-model="userInfo.Nationality" style="width:140px;"></el-input>
+                                </el-col>
+                            </el-form-item>
+
+                            <el-form-item label="身份证号" prop="IdentityNumber">
+                                <el-col :span="16">
+                                    <el-input v-model="userInfo.IdentityNumber"></el-input>
+                                </el-col>
+                            </el-form-item>
+                            <el-form-item label="签发机关">
+                                <el-col :span="16">
+                                    <el-input v-model="userInfo.IssueOffice"></el-input>
+                                </el-col>
+                            </el-form-item>
+                            <el-form-item label="地址">
+                                <el-input v-model="userInfo.Address" type="textarea"></el-input>
+                            </el-form-item>
+                            <el-form-item label="证件期限">
+                                <el-col :span="8">
+                                    <el-date-picker type="date" v-model="userInfo.ValidBegin" style="width:140px;"
+                                                    format="yyyy-MM-dd" value-format="yyyy-MM-dd"></el-date-picker>
+                                </el-col>
+                                <el-col :span="2"> -- </el-col>
+                                <el-col :span="8">
+                                    <el-date-picker type="date" v-model="userInfo.ValidEnd" style="width:140px;"
+                                                    format="yyyy-MM-dd" value-format="yyyy-MM-dd"></el-date-picker>
+                                </el-col>
+                            </el-form-item>
+                            <el-form-item label="手机号码" prop="Phone">
+                                <el-col :span="10">
+                                    <el-input v-model="userInfo.Phone"></el-input>
+                                </el-col>
+                                <el-col :span="4" style="text-align:center;" > 房间号 </el-col>
+                                <el-col :span="8">
+                                    <el-input v-model="userInfo.Room"></el-input>
+                                </el-col>
+                            </el-form-item>
+                        </el-form>
+                        <div class="identity-photo">
+                            <img title="身份证照片" :src="userInfo.IdentityPhoto" />
+                        </div>
+                    </div>
+                </el-col>
+                <el-col :span="1">&nbsp;</el-col>
+                <el-col :span="10">
+                    <div class="header">
+                        <span class="label">发 卡</span>
+                        <el-checkbox label="识别卡号" v-model="autoReadCardNO"></el-checkbox>
+                    </div>
+                    <el-form label-width="100px" :model="cardInfo">
+                        <el-form-item label="卡号">
+                            <el-col :span="8">
+                                <el-input v-model="cardInfo.CardNo" readOnly style="width:140px;"></el-input>
+                            </el-col>
+                            <el-col :span="2">&nbsp;</el-col>
+                            <el-col :span="4">卡类型</el-col>
+                            <el-col :span="8">
+                                <el-select v-model="cardInfo.CardType" style="width:140px;">
+                                    <el-option label="普通卡" value="A"></el-option>
+                                    <el-option label="管理卡" value="B"></el-option>
+                                </el-select>
+                            </el-col>
+                        </el-form-item>
+                        <el-form-item label="失效日期">
+                            <el-col :span="8">
+                                <el-date-picker type="date" v-model="cardInfo.InvalidDate" style="width:140px;"
+                                                format="yyyy-MM-dd" value-format="yyyy-MM-dd"></el-date-picker>
+                            </el-col>
+                            <el-col :span="2">&nbsp;</el-col>
+                            <el-col :span="4">序列号</el-col>
+                            <el-col :span="8">
+                                <el-input v-model="cardInfo.SerialNo" style="width:140px;"></el-input>
+                            </el-col>
+                        </el-form-item>
+                        <el-form-item label="授权门禁">
+                            <el-checkbox-group v-model="selectedDevs" class="devices-group">
+                                <el-checkbox v-for="dev in devices" name="device"
+                                             :label="dev" :key="dev.PkId">{{dev.Name}}</el-checkbox>
+                            </el-checkbox-group>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" @click="save">确认登记</el-button>
+                        </el-form-item>
+                    </el-form>
+
+                </el-col>
+            </el-main>
+        </el-container>
+    </div>
+
+    <script src="./scripts/vue.js"></script>
+    <script src="./scripts/element-ui.2.4.10.js"></script>
+    <script>
+        var service = (function (_proxy) {
+            var exec = function (cmd, data) {
+                if (!_proxy) { throw new Error('非客户端环境'); }
+
+                let p = _proxy.execute(cmd, data && typeof data !== 'string' ? JSON.stringify(data) : data);
+                return new Promise((resolve, reject) => {
+                    p.then(d => {
+                        console.log(cmd, d);
+                        d.data = d && d.jsonData ? JSON.parse(d.jsonData) : null;
+                        if (d.success) {
+                            resolve(d);
+                        } else {
+                            reject(d);
+                        }
+                    }, e => {
+                        Vue.prototype.$message.error('数据请求出错...');
+                        console.error(e);
+                        reject(e);
+                    });
+                });
+            };
+            var _listeners = {};
+            _proxy.trigger = function (key, data) {
+                let fns = _listeners[key];
+                fns && fns.forEach(fn => fn(data));
+            };
+            return {
+                fetchDevices: function () {
+                    return exec('repo.device.fetch');
+                },
+                getCardInfo: function (cardNo) {
+                    return exec('repo.cardinfo.fetchByCardNo', cardNo);
+                },
+                readIdentityCard: function () {
+                    return exec('read-identity-card');
+                },
+                toggleAutoReadMode: function (mode) {
+                    return exec('auto-readcard', mode);
+                },
+                submitAuth: function (data) {
+                    return exec('submit-auth', data);
+                },
+                queryAuth: function (cardId, userId) {
+                    return exec('query-auth', [cardId || '', userId || ''].join(','));
+                },
+                on: function (key, callback) {
+                    let fns = _listeners[key];
+                    if (!fns) {
+                        _listeners[key] = [callback];
+                    } else {
+                        _listeners[key].push(callback);
+                    }
+                }
+            };
+        })(window['$formProxy']);
+    </script>
+    <script>
+        var page = new Vue({
+            el: '#app',
+            data: {
+                activeMenuIndex: '1',
+                userInfo: {
+                    PkId: '',
+                    IdentityNumber: '',
+                    Name: '',
+                    Phone: '',
+                    Room: '',
+                    Gender: '',
+                    Nationality: '',
+                    Birth: '',
+                    Address: '',
+                    IssueOffice: '',
+                    ValidBegin: '',
+                    ValidEnd: '',
+                    IdentityPhoto: '',
+                    GatherPhoto: '',
+                    CreateTime: ''
+                },
+                cardInfo: {
+                    PkId: '',
+                    CardNo: '',
+                    SerialNo: '',
+                    CardType: 'A',
+                    InvalidDate: ''
+                },
+                rules: {
+
+                },
+                selectedDevs: [],
+                devices: [],
+                autoReadIdentityCard: false,
+                autoReadCardNO: false,
+                autoReadMode: 'None'
+            },
+            watch: {
+                autoReadIdentityCard: function (newVal) {
+                    var me = this;
+                    if (newVal) {
+                        if (me.autoReadCardNO) me.autoReadCardNO = false;
+                        me.autoReadMode = 'IdentityCard';
+                    } else if (!me.autoReadCardNO) {
+                        me.autoReadMode = 'None';
+                    }
+                },
+                autoReadCardNO: function (newVal) {
+                    var me = this;
+                    if (newVal) {
+                        if (me.autoReadIdentityCard) me.autoReadIdentityCard = false;
+                        me.autoReadMode = 'ICCardNO';
+                    } else if (!me.autoReadIdentityCard) {
+                        me.autoReadMode = 'None';
+                    }
+                },
+                autoReadMode: function (newVal) {
+                    service.toggleAutoReadMode(newVal);
+                }
+            },
+            methods: {
+                save: function () {
+                    var me = this;
+                    if (!me.userInfo.Name) {
+                        me.$message.error('姓名不能为空');
+                        return false;
+                    }
+                    if (!me.userInfo.IdentityNumber) {
+                        me.$message.error('身份证号不能为空');
+                        return false;
+                    }
+                    if (!me.userInfo.Phone) {
+                        me.$message.error('手机号码不能为空');
+                        return false;
+                    }
+                    if (!me.cardInfo.CardNo) {
+                        me.$message.error('卡号不能为空，请识别');
+                        return false;
+                    }
+                    service.submitAuth({
+                        User: me.userInfo,
+                        Card: me.cardInfo,
+                        Devices: me.selectedDevs
+                    }).then(
+                        d => { me.$message.success('发卡成功'); },
+                        e => { me.$message.error('发卡失败'); }
+                    );
+                },
+                loadByAuthDto: function (dto) {
+                    if (!dto) return;
+                    if (dto.Card) this.cardInfo = dto.Card;
+                    if (dto.User) this.userInfo = dto.User;
+                    if (dto.Devices) {
+                        this.selectedDevs = this.devices.filter(d => {
+                            return dto.Devices.findIndex(di => di.PkId == d.PkId) > -1;
+                        });
+                    }
+                }
+            },
+            created: function () {
+                let me = this;
+                service.fetchDevices().then(d => {
+                    if (d.success) {
+                        me.devices = d.data || [];
+                    }
+                });
+
+                var getQuery = function (name) {
+                    var reg = new RegExp(name + '=([^&]*)');
+                    var m = reg.exec(location.search);
+                    if (m && m.length > 1) {
+                        return m[1];
+                    }
+                    return null;
+                }
+                var cardId = getQuery('card');
+                var userId = getQuery('user');
+                if (cardId || userId) {
+                    service.queryAuth(cardId, userId).then(
+                        d => {
+                            if (!d.success || !d.data) return;
+                            me.loadByAuthDto(d.data);
+                        }
+                    );
+                }
+            }
+        });
+
+        service.on('read-identitycard', d => {            
+            ['IdentityNumber', 'Name', 'Gender', 'Nationality', 'Birth', 'Address'
+                , 'IssueOffice', 'ValidBegin', 'ValidEnd', 'IdentityPhoto'].forEach((attr) => {
+                    page.userInfo[attr] = d[attr] || '';
+                });
+        });
+        service.on('read-iccardno', authDto => {
+            page.autoReadCardNO = false;
+            me.loadByAuthDto(authDto);
+        });
+    </script>
+</body>
+</html>

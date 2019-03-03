@@ -1,0 +1,90 @@
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+.el-header{ padding: 0; }
+.el-header a {
+    text-decoration: none;
+}
+.el-header > .el-menu{
+    padding:0 20px;
+}
+
+.toolbar {
+    padding: 10px 0;
+}
+
+    .toolbar .el-input {
+        display: inline-block;
+        width: 300px;
+    }
+
+    .toolbar .el-button-group {
+        float: right;
+    }
+.user-dialog .el-form-item {
+    margin-bottom: 6px;
+}
+
+.identity-photo {
+    position: absolute;
+    width: 180px;
+    height: 200px;
+    text-align: center;
+    top: 0;
+    right: 0;
+}
+
+    .identity-photo > img {
+        width: 140px;
+        height: 180px;
+    }
+
+.header {
+    padding-bottom: 5px;
+    margin-bottom: 5px;
+}
+
+    .header .label {
+        border-left: 4px solid #0094ff;
+        padding-left: 2px;
+        padding-right: 40px;
+    }
+
+html,body{ margin: 0; padding:0;}
+
+
+.user-dialog .el-form-item {
+    margin-bottom: 6px;
+}
+
+.identity-photo {
+    position: absolute;
+    width: 180px;
+    height: 200px;
+    text-align:center;
+    top: 0;
+    right: 0;
+}
+.identity-photo > img{
+    width: 140px;
+    height: 180px;
+}
+.header{
+    padding-bottom:5px;
+    margin-bottom: 5px;
+}
+.header .label {
+    border-left: 4px solid #0094ff;
+    padding-left: 2px;
+    padding-right: 40px;
+}
+
+.devices-group .el-checkbox + .el-checkbox {
+    margin-left: 0;
+}
+.devices-group .el-checkbox{
+    display:inline-block;
+    width: 120px;
+}
